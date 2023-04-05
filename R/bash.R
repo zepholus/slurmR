@@ -116,6 +116,9 @@ sacct.default <- function(
     )
 
   ans <- silent_system2("sacct", flags, stdout = TRUE, stderr = TRUE)
+  
+  # Filter out any lines that do not match the expected format:  something|something|something|
+  ans <- ans[grep("^\\S+\\|\\S+\\|\\S+\\|", ans)]
 
   ans <- lapply(ans, strsplit, split="|", fixed=TRUE)
   ans <- do.call(rbind, lapply(ans, unlist))
