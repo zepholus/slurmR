@@ -274,16 +274,23 @@ makeSlurmCluster <- function(
     "). Creating the cluster object...")
 
   # Creating the PSOCK cluster
-  cl <- do.call(
-    parallel::makePSOCKcluster,
-    c(list(names = nodenames), cluster_opt)
+  rscript <- c("singularity", "exec", "--bind", "singularity/custom_hosts:/etc/hosts", "singularity/traca2.sif", "Rscript")
+                    
+  cl <- parallelly::makeClusterPSOCK(
+    workers = nodenames, 
+    rscript = rscript, 
+    verbose = TRUE
   )
-
+                    
+  print(cl)
+                 
   attr(cl, "SLURM_JOBID") <- get_job_id(job)
   attr(cl, "class")       <- c("slurm_cluster", attr(cl, "class"))
 
   # The temp file is no longer needed
   job$clean()
+
+  cl <- parallelly::autoStopCluster(cl)
 
   cl
 
