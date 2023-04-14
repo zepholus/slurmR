@@ -306,8 +306,7 @@ makeSlurmCluster <- function(
 #'
 #' 2. Cancel the Slurm job using `scancel`.
 #'
-stopCluster.slurm_cluster <- function(cl) {
-
+stopClusterWrapper <- function(cl) {
   # First, we need to stop the original processes, this will kill the cluster
   # right away!
   # Removing the first class, and calling stop cluster Again!
@@ -321,9 +320,22 @@ stopCluster.slurm_cluster <- function(cl) {
     scancel(jobid)
 
   invisible()
-
 }
+                    
 
+stopCluster.slurm_cluster <- function(cl) {
+  tryCatch(
+    R.utils::withTimeout(stopClusterWrapper(cl), timeout = 2),
+    TimeoutException = function(e) {
+      # Handle the timeout error
+      return(TRUE)
+    },
+    error = function(e) {
+      # Handle any other errors that may occur
+      print(paste("An error occurred:", e$message))
+    }
+  )
+}
 
 #' @export
 print.slurm_cluster <- function(x, ...) {
