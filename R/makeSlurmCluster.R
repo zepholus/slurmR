@@ -1,7 +1,7 @@
 get_hosts <- function(
   ntasks   = 1,
-  tmp_path = getwd(),
   ...
+  tmp_path = getwd(),
   ) {
 
   # In case that the host retrival fails, this should be the exit mechanism
@@ -319,7 +319,7 @@ stopCluster.slurm_cluster <- function(cl) {
   print('aaa')
   tryCatch(
     print('bbb')
-    R.utils::withTimeout(stopCluster(cl), timeout = 5),
+    withTimeout(stopCluster(cl), timeout = 5),
     TimeoutException = function(e) {
       # In our cluster calling parallel::stopCluster(cl) never ends (but it indeed closes the conenection), so add timeout
       return(TRUE)
