@@ -288,6 +288,11 @@ makeSlurmCluster <- function(
   cl
 
 }
+                    
+                    
+stopClusterWrapper <- function(cl) {
+  parallel::stopCluster(cl)
+}
 
 #' @export
 #' @param cl An object of class `slurm_cluster`.
@@ -309,7 +314,18 @@ stopCluster.slurm_cluster <- function(cl) {
     jobid <- get_job_id(cl)
 
   class(cl) <- setdiff(class(cl), "slurm_cluster")
-  parallel::stopCluster(cl)
+  #parallel::stopCluster(cl)
+  tryCatch(
+    R.utils::withTimeout(stopClusterWrapper(cl), timeout = 2),
+    TimeoutException = function(e) {
+      # Handle the timeout error
+      return(TRUE)
+    },
+    error = function(e) {
+      # Handle any other errors that may occur
+      print(paste("An error occurred:", e$message))
+    }
+  )
 
   if (!opts_slurmR$get_debug())
     scancel(jobid)
