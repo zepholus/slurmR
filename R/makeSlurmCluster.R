@@ -1,7 +1,7 @@
 get_hosts <- function(
   ntasks   = 1,
-  ...
   tmp_path = getwd(),
+  ...
   ) {
 
   # In case that the host retrival fails, this should be the exit mechanism
@@ -274,6 +274,7 @@ makeSlurmCluster <- function(
     "). Creating the cluster object...")
 
   # Creating the PSOCK cluster
+  # Creating the PSOCK cluster
   rscript <- c("singularity", "exec", "--bind", "singularity/custom_hosts:/etc/hosts", "singularity/traca2.sif", "Rscript")
                     
   cl <- parallelly::makeClusterPSOCK(
@@ -283,7 +284,7 @@ makeSlurmCluster <- function(
   )
                     
   print(cl)
-                 
+                    
   attr(cl, "SLURM_JOBID") <- get_job_id(job)
   attr(cl, "class")       <- c("slurm_cluster", attr(cl, "class"))
 
@@ -315,11 +316,18 @@ stopCluster.slurm_cluster <- function(cl) {
 
   class(cl) <- setdiff(class(cl), "slurm_cluster")
   
-  #parallel::stopCluster(cl)
-  print('aaa')
-
-
-
+  tryCatch(
+    print('bbb')
+    withTimeout(stopCluster(cl), timeout = 5),
+    TimeoutException = function(e) {
+      # In our cluster calling parallel::stopCluster(cl) never ends (but it indeed closes the conenection), so add timeout
+      return(TRUE)
+    },
+    error = function(e) {
+      # Handle any other errors that may occur
+      print("An error occurred")
+    }
+  )
   if (!opts_slurmR$get_debug())
     scancel(jobid)
 
@@ -336,4 +344,3 @@ print.slurm_cluster <- function(x, ...) {
   invisible(NULL)
 
 }
-
