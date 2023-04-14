@@ -290,8 +290,6 @@ makeSlurmCluster <- function(
   # The temp file is no longer needed
   job$clean()
 
-  cl <- parallelly::autoStopCluster(cl)
-
   cl
 
 }
@@ -316,7 +314,21 @@ stopCluster.slurm_cluster <- function(cl) {
     jobid <- get_job_id(cl)
 
   class(cl) <- setdiff(class(cl), "slurm_cluster")
-  parallel::stopCluster(cl)
+  
+  #parallel::stopCluster(cl)
+  
+  tryCatch(
+    R.utils::withTimeout(stopCluster(cl), timeout = 5),
+    TimeoutException = function(e) {
+      # In our cluster calling parallel::stopCluster(cl) never ends (but it indeed closes the conenection), so add timeout
+      return(TRUE)
+    },
+    error = function(e) {
+      # Handle any other errors that may occur
+      print("An error occurred")
+    }
+  )
+
 
   if (!opts_slurmR$get_debug())
     scancel(jobid)
