@@ -315,24 +315,15 @@ stopCluster.slurm_cluster <- function(cl) {
     jobid <- get_job_id(cl)
 
   class(cl) <- setdiff(class(cl), "slurm_cluster")
-  
-  tryCatch({
-    R.utils::withTimeout(parallel::stopCluster(cl), timeout = 5)
-  }, TimeoutException = function(e) {
-    # In our cluster calling parallel::stopCluster(cl) never ends (but it indeed closes the connection), so add timeout
-    return(TRUE)
-  }, error = function(e) {
-    # Handle any other errors that may occur
-    print("An error occurred")
-  })
+  parallel::stopCluster(cl)
 
-  
   if (!opts_slurmR$get_debug())
     scancel(jobid)
 
   invisible()
 
 }
+
 
 #' @export
 print.slurm_cluster <- function(x, ...) {
