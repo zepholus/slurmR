@@ -274,17 +274,17 @@ makeSlurmCluster <- function(
     "). Creating the cluster object...")
 
   # Creating the PSOCK cluster
-  # Creating the PSOCK cluster
-  rscript <- c("singularity", "exec", "--bind", "singularity/custom_hosts:/etc/hosts", "singularity/traca2.sif", "Rscript")
-                    
+
+  rscript <- c("singularity", "exec", "--bind", "~/singularity/fast_fluvia/data:/mnt", "--bind", "~/singularity/custom_hosts:/etc/hosts", "~/singularity/traca2.sif", "Rscript")
+
   cl <- parallelly::makeClusterPSOCK(
-    workers = nodenames, 
-    rscript = rscript, 
+    workers = nodenames,
+    rscript = rscript,
     verbose = TRUE
   )
-                    
+
   print(cl)
-                    
+
   attr(cl, "SLURM_JOBID") <- get_job_id(job)
   attr(cl, "class")       <- c("slurm_cluster", attr(cl, "class"))
 
@@ -321,7 +321,7 @@ stopClusterWrapper <- function(cl) {
 
   invisible()
 }
-                    
+
 
 stopCluster.slurm_cluster <- function(cl) {
   tryCatch(
