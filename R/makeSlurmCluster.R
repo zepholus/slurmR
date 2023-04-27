@@ -275,7 +275,7 @@ makeSlurmCluster <- function(
 
   # Creating the PSOCK cluster
 
-  rscript <- c("singularity", "exec", "--bind", "~/singularity/fast_fluvia/data:/mnt", "--bind", "~/singularity/custom_hosts:/etc/hosts", "~/singularity/traca2.sif", "Rscript")
+  rscript <- c("singularity", "exec", "--bind", "~/singularity/fast_fluvia/data:/mnt", "--bind", "~/singularity/custom_hosts:/etc/hosts", "singularity/traca2.sif", "Rscript")
 
   cl <- parallelly::makeClusterPSOCK(
     workers = nodenames,
